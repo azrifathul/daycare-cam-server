@@ -11,14 +11,14 @@ const io = require("socket.io")(server);
 
 io.sockets.on("error", (e) => console.log(e));
 io.sockets.on("connection", (socket) => {
-  socket.on("hello", () => console.log("try"));
-  socket.on("broadcaster", () => {
-    console.log("yeaay");
+  socket.on("broadcaster", ({ roomId }) => {
+    socket.join(roomId);
+
     broadcaster = socket.id;
     socket.broadcast.emit("broadcaster");
   });
-  socket.on("watcher", () => {
-    socket.to(broadcaster).emit("watcher", socket.id);
+  socket.on("watcher", ({ roomId }) => {
+    socket.to(roomId).to(broadcaster).emit("watcher", socket.id);
   });
   socket.on("offer", (id, message) => {
     socket.to(id).emit("offer", socket.id, message);
@@ -33,6 +33,7 @@ io.sockets.on("connection", (socket) => {
     socket.to(broadcaster).emit("disconnectPeer", socket.id);
   });
 });
+
 server.listen(process.env.PORT || port, () =>
   console.log(`Server is running on port ${port}`)
 );
