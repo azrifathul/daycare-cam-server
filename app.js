@@ -1,11 +1,8 @@
 const express = require("express");
 const app = express();
 
-let broadcaster1;
-let broadcaster2;
-
 const port = 4000;
-
+let broadcaster;
 const http = require("http");
 const server = http.createServer(app);
 
@@ -18,15 +15,14 @@ const io = require("socket.io")(server);
 // const client = require("twilio")(accountSid, authToken);
 
 // client.tokens.create({ ttl: 160000 }).then((token) => console.log(token));
-
 io.sockets.on("error", (e) => console.log(e));
 io.sockets.on("connection", (socket) => {
   socket.on("broadcaster", () => {
-    broadcaster1 = socket.id;
+    broadcaster = socket.id;
     socket.broadcast.emit("broadcaster");
   });
   socket.on("watcher", () => {
-    socket.to(broadcaster1).emit("watcher", socket.id);
+    socket.to(broadcaster).emit("watcher", socket.id);
   });
   socket.on("offer", (id, message) => {
     socket.to(id).emit("offer", socket.id, message);
@@ -37,30 +33,6 @@ io.sockets.on("connection", (socket) => {
   socket.on("candidate", (id, message) => {
     socket.to(id).emit("candidate", socket.id, message);
   });
-
-  //camera2
-
-  // socket.on("broadcaster-infant", () => {
-  //   broadcaster2 = socket.id;
-  //   socket.broadcast.emit("broadcaster-infant");
-  //   console.log("cek broadcast infant");
-  // });
-  // socket.on("watcher-infant", () => {
-  //   socket.to(broadcaster2).emit("watcher-infant", socket.id);
-  // });
-  // socket.on("offer-infant", (id, message) => {
-  //   socket.to(id).emit("offer-infant", socket.id, message);
-  // });
-  // socket.on("answer-infant", (id, message) => {
-  //   socket.to(id).emit("answer-infant", socket.id, message);
-  // });
-  // socket.on("candidate-infant", (id, message) => {
-  //   socket.to(id).emit("candidate-infant", socket.id, message);
-  // });
-  // socket.on("disconnect", () => {
-  //   socket.to(broadcaster2).emit("disconnectPeer", socket.id);
-  // });
-  // console.log(broadcaster1);
 });
 
 server.listen(process.env.PORT || port, () =>
